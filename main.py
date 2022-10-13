@@ -1,5 +1,6 @@
-
-
+from game import Game
 
 if __name__ == '__main__':
-    pass
+    game = Game()
+    game.run()
+    x = 5
