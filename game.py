@@ -9,7 +9,7 @@ class Game:
         self.surface.fill((204, 18, 44))
         self.board = Board(self.surface)
 
-    def run(self):
+    def play(self):
         running = True
 
         while running:

@@ -33,16 +33,22 @@ class Cell:
     def draw(self, screen):
         pygame.draw.rect(screen, self.colour(), pygame.Rect(self.position(), (self.cell_size, self.cell_size)))
 
+    def get_piece_position(self):
+        pos = self.position()
+        return (pos[0] + self.cell_size / 2, pos[1] + self.cell_size / 2)
+
     def draw_piece(self, screen, color):
 
         if color.upper() == "RED":
-            color = pygame.Color("red")
-        if color.upper() == "GREEN":
-            color = pygame.Color("green")
-        if color.upper() == "YELLOW":
-            color = pygame.Color("gold")
-        if color.upper() == "BLUE":
-            color = pygame.Color("skyblue")
+            colour = pygame.Color("red")
+        elif color.upper() == "GREEN":
+            colour = pygame.Color("green")
+        elif color.upper() == "YELLOW":
+            colour = pygame.Color("gold")
+        elif color.upper() == "BLUE":
+            colour = pygame.Color("skyblue")
+        else:
+            raise Exception("Wrong color")
 
-        pygame.draw.circle(screen, pygame.Color("black"), self.position(self.cell_size / 2), self.piece_radius + self.border_size)
-        pygame.draw.circle(screen, color, self.position(self.cell_size / 2))
+        pygame.draw.circle(screen, pygame.Color("black"), self.get_piece_position(), self.piece_radius + self.border_size)
+        pygame.draw.circle(screen, colour, self.get_piece_position(), self.piece_radius)

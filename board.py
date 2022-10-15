@@ -22,9 +22,6 @@ class Board:
         pygame.display.set_caption("Ludo")
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.update()
-        self.draw_pieces_in_base()
-
-
 
     def get_grid(self):
         # Make grid (start with grid_size x grid_size matrix with empty values)
@@ -37,9 +34,10 @@ class Board:
             for x in range(0, self.grid_size):
                 grid[x][y] = Cell(x, y, colors[y][x])
                 grid[x][y].draw(self.screen)
+                print(f"x: {x}\ty:{y}\ttrack[y][x]: {track[y][x]}")
 
-            if track[y][x] != '-':
-                self.track[track[y][x]] = grid[x][y]
+                if track[y][x] != '-':
+                    self.track[track[y][x]] = grid[x][y]
 
         self.grid = grid
 
@@ -49,6 +47,7 @@ class Board:
         self.draw_out_cells()
         self.show_home_bases()
         self.draw_pieces()
+        # self.draw_pieces_in_base()
 
     def update(self):
         self.draw_board()
@@ -72,6 +71,7 @@ class Board:
         pygame.draw.polygon(self.screen, pygame.Color("skyblue"), [bot_left, middle_bot_left, middle_bot_right, bot_right])
 
     def draw_out_cells(self):
+        # Draw squares where each color goes out of base to
         def draw_cell(out_pos, color_id):
             out_cell = self.grid[out_pos[0]][out_pos[1]]
             out_cell.color_id = color_id
@@ -123,39 +123,54 @@ class Board:
         white_square_pos.append((circle_center[0] + circle_radius/rv - self.cell_size/2, circle_center[1] + circle_radius/rv - self.cell_size/2))
 
         for pos in white_square_pos:
-            # Draw black square under to get a black border
-            black_pos = (pos[0] - self.border_size, pos[1] - self.border_size)
-            black_size = (self.cell_size + 2*self.border_size, self.cell_size + 2*self.border_size)
-            pygame.draw.rect(self.screen, pygame.Color("black"), pygame.Rect(black_pos, black_size))
-            pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(pos, (self.cell_size, self.cell_size)))
-            # Save postion of middle of white square to be able to draw the pieces later
+            self._draw_white_square_with_border(pos)
             self.base_positions[player.color] = [(x[0] + self.cell_size / 2, x[1] + self.cell_size / 2) for x in white_square_pos]
 
-    def draw_pieces_in_base(self):
-        for player in self.players:
-            for piece in player.pieces:
-                white_square_pos = self.base_positions[player.color.upper()]
-                for pos in white_square_pos:
-                    piece.base_position = pos
-                    self._draw_circle_with_border(pygame.Color(player.color), pos, piece.radius)
-
-        pygame.display.flip()
-
     def draw_pieces(self):
-        offset = {"red": 0,
-                  "green": 13,
-                  "yellow": 26,
-                  "blue": 39}
+
+        testing = True
 
         for player in self.players:
             for piece in player.pieces:
-                if piece.is_on_track():
-                    pass
+                if piece.is_in_base():
+                    white_square_pos = self.base_positions[player.color.upper()]
+                    for pos in white_square_pos:
+                        piece.base_position = pos
+                        self._draw_circle_with_border(pygame.Color(player.color), pos, piece.radius)
 
+                if piece.is_on_track():
+                    curr_cell = self.get_cell(piece.color, piece.position)
+                    curr_cell.draw_piece(self.screen, piece.color)
+                    self._draw_white_square_with_border(piece.base_position)
+
+    def get_cell(self, color, position):
+        offset = {"RED": 0,
+                  "GREEN": 13,
+                  "YELLOW": 26,
+                  "BLUE": 39}
+        if position > 51:
+            if color == "RED":
+                position = "1-" + str(position)
+            elif color == "YELLOW":
+                position = "2-" + str(position)
+            elif color == "GREEN":
+                position = "3-" + str(position)
+            elif color == "BLUE":
+                position = "4-" + str(position)
+        else:
+            position += offset[color]
+
+        return self.track[str(position)]
 
     def _draw_circle_with_border(self, color, circle_center, circle_radius):
         pygame.draw.circle(self.screen, pygame.Color("black"), circle_center, circle_radius + self.border_size)
         pygame.draw.circle(self.screen, pygame.Color(color), circle_center, circle_radius)
+
+    def _draw_white_square_with_border(self, pos):
+        black_pos = (pos[0] - self.border_size, pos[1] - self.border_size)
+        black_size = (self.cell_size + 2 * self.border_size, self.cell_size + 2 * self.border_size)
+        pygame.draw.rect(self.screen, pygame.Color("black"), pygame.Rect(black_pos, black_size))
+        pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(pos, (self.cell_size, self.cell_size)))
 
 if __name__ == '__main__':
     board = Board()
@@ -165,5 +180,6 @@ if __name__ == '__main__':
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     running = False
+                # board.update()
 
 
