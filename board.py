@@ -4,20 +4,24 @@ import csv
 from cell import Cell
 from player import Player
 from pygame.locals import *
+import random
+import time
 
 
 class Board:
     cell_size = 50
     grid_size = 15
     border_size = 3
+    die_border = 20
 
-    def __init__(self):
+    def __init__(self, players):
         self.screen_width = (self.cell_size * self.grid_size) + ((self.grid_size - 1) * self.border_size)
         self.screen_height = (self.cell_size * self.grid_size) + ((self.grid_size - 1) * self.border_size)
-        self.players = [Player("RED"), Player("GREEN"), Player("GOLD"), Player("SKYBLUE")]
+        self.players = players
         self.grid = None
         self.track = {}
         self.base_positions = {}
+        self.die_position = None
 
         pygame.display.set_caption("Ludo")
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
@@ -34,7 +38,6 @@ class Board:
             for x in range(0, self.grid_size):
                 grid[x][y] = Cell(x, y, colors[y][x])
                 grid[x][y].draw(self.screen)
-                print(f"x: {x}\ty:{y}\ttrack[y][x]: {track[y][x]}")
 
                 if track[y][x] != '-':
                     self.track[track[y][x]] = grid[x][y]
@@ -47,7 +50,7 @@ class Board:
         self.draw_out_cells()
         self.show_home_bases()
         self.draw_pieces()
-        # self.draw_pieces_in_base()
+        self.draw_die(6)
 
     def update(self):
         self.draw_board()
@@ -55,20 +58,36 @@ class Board:
 
     def draw_board_middle(self):
         top_left = (self.cell_size + self.border_size) * 6, (self.cell_size + self.border_size) * 6
-        top_right = (self.cell_size + self.border_size) * 9 - self.border_size - 1, (self.cell_size + self.border_size) * 6
-        bot_left = (self.cell_size + self.border_size) * 6, (self.cell_size + self.border_size) * 9 - self.border_size - 1
-        bot_right = (self.cell_size + self.border_size) * 9 - self.border_size - 1, (self.cell_size + self.border_size) * 9 - self.border_size - 1
+        top_right = (self.cell_size + self.border_size) * 9 - self.border_size - 1, (
+                    self.cell_size + self.border_size) * 6
+        bot_left = (self.cell_size + self.border_size) * 6, (
+                    self.cell_size + self.border_size) * 9 - self.border_size - 1
+        bot_right = (self.cell_size + self.border_size) * 9 - self.border_size - 1, (
+                    self.cell_size + self.border_size) * 9 - self.border_size - 1
 
         middle_top_left = (self.cell_size + self.border_size) * 7, (self.cell_size + self.border_size) * 7
-        middle_top_right = (self.cell_size + self.border_size) * 8 - self.border_size - 1, (self.cell_size + self.border_size) * 7
-        middle_bot_left = (self.cell_size + self.border_size) * 7, (self.cell_size + self.border_size) * 8 - self.border_size - 1
-        middle_bot_right = (self.cell_size + self.border_size) * 8 - self.border_size - 1, (self.cell_size + self.border_size) * 8 - self.border_size - 1
+        middle_top_right = (self.cell_size + self.border_size) * 8 - self.border_size - 1, (
+                    self.cell_size + self.border_size) * 7
+        middle_bot_left = (self.cell_size + self.border_size) * 7, (
+                    self.cell_size + self.border_size) * 8 - self.border_size - 1
+        middle_bot_right = (self.cell_size + self.border_size) * 8 - self.border_size - 1, (
+                    self.cell_size + self.border_size) * 8 - self.border_size - 1
+
+        # # Save the middle position to draw the die
+        self.die_position = {"top_left": middle_top_left,
+                             "top_right": middle_top_right,
+                             "bot_right": middle_bot_right,
+                             "bot_left": middle_bot_left}
+        # self.die_position = [middle_top_left,middle_top_right, middle_bot_right, middle_bot_left]
 
         middle = (self.screen_width / 2, self.screen_height / 2)
         pygame.draw.polygon(self.screen, pygame.Color("red"), [top_left, middle_top_left, middle_bot_left, bot_left])
-        pygame.draw.polygon(self.screen, pygame.Color("green"), [top_left, middle_top_left, middle_top_right, top_right])
-        pygame.draw.polygon(self.screen, pygame.Color("gold"), [top_right, middle_top_right, middle_bot_right, bot_right])
-        pygame.draw.polygon(self.screen, pygame.Color("skyblue"), [bot_left, middle_bot_left, middle_bot_right, bot_right])
+        pygame.draw.polygon(self.screen, pygame.Color("green"),
+                            [top_left, middle_top_left, middle_top_right, top_right])
+        pygame.draw.polygon(self.screen, pygame.Color("gold"),
+                            [top_right, middle_top_right, middle_bot_right, bot_right])
+        pygame.draw.polygon(self.screen, pygame.Color("skyblue"),
+                            [bot_left, middle_bot_left, middle_bot_right, bot_right])
 
     def draw_out_cells(self):
         # Draw squares where each color goes out of base to
@@ -108,8 +127,8 @@ class Board:
         # Fill with white
         pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(position, (base_size, base_size)))
         # Make colored circles
-        circle_center = position[0] + base_size/2, position[1] + base_size/2
-        circle_radius = base_size/2*0.9
+        circle_center = position[0] + base_size / 2, position[1] + base_size / 2
+        circle_radius = base_size / 2 * 0.9
         # First draw a black circle under for border
         pygame.draw.circle(self.screen, pygame.Color("black"), circle_center, circle_radius + self.border_size)
         pygame.draw.circle(self.screen, pygame.Color(player.color), circle_center, circle_radius)
@@ -117,14 +136,19 @@ class Board:
         white_square_pos = []
         # radius divider
         rv = 3
-        white_square_pos.append((circle_center[0] - circle_radius/rv - self.cell_size/2, circle_center[1] - circle_radius/rv - self.cell_size/2))
-        white_square_pos.append((circle_center[0] + circle_radius/rv - self.cell_size/2, circle_center[1] - circle_radius/rv - self.cell_size/2))
-        white_square_pos.append((circle_center[0] - circle_radius/rv - self.cell_size/2, circle_center[1] + circle_radius/rv - self.cell_size/2))
-        white_square_pos.append((circle_center[0] + circle_radius/rv - self.cell_size/2, circle_center[1] + circle_radius/rv - self.cell_size/2))
+        white_square_pos.append((circle_center[0] - circle_radius / rv - self.cell_size / 2,
+                                 circle_center[1] - circle_radius / rv - self.cell_size / 2))
+        white_square_pos.append((circle_center[0] + circle_radius / rv - self.cell_size / 2,
+                                 circle_center[1] - circle_radius / rv - self.cell_size / 2))
+        white_square_pos.append((circle_center[0] - circle_radius / rv - self.cell_size / 2,
+                                 circle_center[1] + circle_radius / rv - self.cell_size / 2))
+        white_square_pos.append((circle_center[0] + circle_radius / rv - self.cell_size / 2,
+                                 circle_center[1] + circle_radius / rv - self.cell_size / 2))
 
         for pos in white_square_pos:
             self._draw_white_square_with_border(pos)
-            self.base_positions[player.color] = [(x[0] + self.cell_size / 2, x[1] + self.cell_size / 2) for x in white_square_pos]
+            self.base_positions[player.color] = [(x[0] + self.cell_size / 2, x[1] + self.cell_size / 2) for x in
+                                                 white_square_pos]
 
     def draw_pieces(self):
 
@@ -172,14 +196,61 @@ class Board:
         pygame.draw.rect(self.screen, pygame.Color("black"), pygame.Rect(black_pos, black_size))
         pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(pos, (self.cell_size, self.cell_size)))
 
-if __name__ == '__main__':
-    board = Board()
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-                # board.update()
+    def draw_die(self, roll):
+
+        die_pos = (
+        self.die_position["top_left"][0] + self.die_border / 2, self.die_position["top_left"][1] + self.die_border / 2)
+        die_size = abs(self.die_position["top_left"][0] - self.die_position["top_right"][0]) - self.die_border
+        pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(die_pos, (die_size, die_size)),
+                         border_radius=2)
+        pip_size = 3
+        if roll in [1, 3, 5]:
+            pip_center = (die_pos[0] + die_size / 2, die_pos[1] + die_size / 2)
+
+            pygame.draw.circle(self.screen, pygame.Color("black"), pip_center, pip_size)
+        if roll in [2, 3]:
+            corner_pos = self._get_corner_die_positions(die_pos, die_size)
+            for index, pos in enumerate(corner_pos):
+                if index in [0, 3]:
+                    pygame.draw.circle(self.screen, pygame.Color("black"), pos, pip_size)
+        if roll in [4, 5, 6]:
+            corner_pos = self._get_corner_die_positions(die_pos, die_size)
+            for pos in corner_pos:
+                pygame.draw.circle(self.screen, pygame.Color("black"), pos, pip_size)
+        if roll == 6:
+            middle_pip_pos = [(die_pos[0] + die_size / 4, die_pos[1] + die_size / 2),
+                              (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size / 2)]
+            for pos in middle_pip_pos:
+                pygame.draw.circle(self.screen, pygame.Color("black"), pos, pip_size)
+
+    def _get_corner_die_positions(self, die_pos, die_size):
+        corner_pos = [(die_pos[0] + die_size / 4, die_pos[1] + die_size / 4),
+                      (die_pos[0] + die_size / 4, die_pos[1] + die_size * 3 / 4),
+                      (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size / 4),
+                      (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size * 3 / 4),
+                      ]
+
+        return corner_pos
+
+    def roll(self):
+        roll_val = 0
+        for i in range(random.randint(10, 40)):
+            roll_val = random.randint(1, 6)
+            self.draw_die(roll_val)
+            pygame.display.flip()
+            time.sleep(0.05)
+
+        return roll_val
 
 
+# if __name__ == '__main__':
+#     board = Board()
+#     running = True
+#     while running:
+#         for event in pygame.event.get():
+#             if event.type == KEYDOWN:
+#                 if event.key == K_ESCAPE:
+#                     running = False
+#                 if event.key == K_RETURN:
+#                     # print("HERE")
+#                     board.roll()
