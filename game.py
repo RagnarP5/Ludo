@@ -8,7 +8,7 @@ import random
 
 class Game:
     winner_found = False
-    current_player_id = random.randint(0, 3)
+
     def __init__(self):
         pygame.init()
         self.players = [Player("Ragnar", "RED"),
@@ -16,15 +16,12 @@ class Game:
                         Player("Hagalín", "GOLD"),
                         Player("Logi", "SKYBLUE")]
         self.board = Board(self.players)
+        self.active_player = self.players[3]
 
     def play(self):
-        running = True
 
-        while running:
-            for event in pygame.event.get():
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        running = False
-                    if event.key == K_RETURN:
-                        self.board.roll()
-
+        while not self.winner_found:
+            roll = self.board.roll()
+            self.active_player.move(roll)
+            self.board.update()
+            time.sleep(0.001)

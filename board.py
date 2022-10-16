@@ -2,8 +2,6 @@ import pygame
 import os
 import csv
 from cell import Cell
-from player import Player
-from pygame.locals import *
 import random
 import time
 
@@ -51,6 +49,7 @@ class Board:
         self.show_home_bases()
         self.draw_pieces()
         self.draw_die(6)
+        self.show_names()
 
     def update(self):
         self.draw_board()
@@ -59,19 +58,19 @@ class Board:
     def draw_board_middle(self):
         top_left = (self.cell_size + self.border_size) * 6, (self.cell_size + self.border_size) * 6
         top_right = (self.cell_size + self.border_size) * 9 - self.border_size - 1, (
-                    self.cell_size + self.border_size) * 6
+                self.cell_size + self.border_size) * 6
         bot_left = (self.cell_size + self.border_size) * 6, (
-                    self.cell_size + self.border_size) * 9 - self.border_size - 1
+                self.cell_size + self.border_size) * 9 - self.border_size - 1
         bot_right = (self.cell_size + self.border_size) * 9 - self.border_size - 1, (
-                    self.cell_size + self.border_size) * 9 - self.border_size - 1
+                self.cell_size + self.border_size) * 9 - self.border_size - 1
 
         middle_top_left = (self.cell_size + self.border_size) * 7, (self.cell_size + self.border_size) * 7
         middle_top_right = (self.cell_size + self.border_size) * 8 - self.border_size - 1, (
-                    self.cell_size + self.border_size) * 7
+                self.cell_size + self.border_size) * 7
         middle_bot_left = (self.cell_size + self.border_size) * 7, (
-                    self.cell_size + self.border_size) * 8 - self.border_size - 1
+                self.cell_size + self.border_size) * 8 - self.border_size - 1
         middle_bot_right = (self.cell_size + self.border_size) * 8 - self.border_size - 1, (
-                    self.cell_size + self.border_size) * 8 - self.border_size - 1
+                self.cell_size + self.border_size) * 8 - self.border_size - 1
 
         # # Save the middle position to draw the die
         self.die_position = {"top_left": middle_top_left,
@@ -150,9 +149,30 @@ class Board:
             self.base_positions[player.color] = [(x[0] + self.cell_size / 2, x[1] + self.cell_size / 2) for x in
                                                  white_square_pos]
 
-    def draw_pieces(self):
+    def show_names(self):
+        font = pygame.font.Font('freesansbold.ttf', 20)
+        name_padding = 10
+        top_left = (name_padding, name_padding)
+        top_right = ((self.cell_size + self.border_size) * 9 + name_padding, name_padding)
+        bot_left = (name_padding, (self.cell_size + self.border_size) * 9 + name_padding)
+        bot_right = (
+        (self.cell_size + self.border_size) * 9 + name_padding, (self.cell_size + self.border_size) * 9 + name_padding)
 
-        testing = True
+        for player in self.players:
+            text = font.render(player.name, True, player.color)
+            if player.color.upper() == "RED":
+                pos = top_left
+            elif player.color.upper() == "GREEN":
+                pos = top_right
+            elif player.color.upper() == "GOLD":
+                pos = bot_right
+            elif player.color.upper() == "SKYBLUE":
+                pos = bot_left
+            else:
+                raise Exception("Incorrect color")
+            self.screen.blit(text, pos)
+
+    def draw_pieces(self):
 
         for player in self.players:
             for piece in player.pieces:
@@ -163,26 +183,32 @@ class Board:
                         self._draw_circle_with_border(pygame.Color(player.color), pos, piece.radius)
 
                 if piece.is_on_track():
-                    curr_cell = self.get_cell(piece.color, piece.position)
+                    curr_cell = self.get_cell(piece)
                     curr_cell.draw_piece(self.screen, piece.color)
-                    self._draw_white_square_with_border(piece.base_position)
+                    self._draw_white_square_with_border(self._offset_position(piece.base_position, (-1)*self.cell_size/2))
 
-    def get_cell(self, color, position):
+    def _offset_position(self, position, offset):
+        return position[0] + offset, position[1] + offset
+
+    def get_cell(self, piece):
         offset = {"RED": 0,
                   "GREEN": 13,
-                  "YELLOW": 26,
-                  "BLUE": 39}
+                  "GOLD": 26,
+                  "SKYBLUE": 39}
+        position = piece.position
         if position > 51:
-            if color == "RED":
-                position = "1-" + str(position)
-            elif color == "YELLOW":
-                position = "2-" + str(position)
-            elif color == "GREEN":
-                position = "3-" + str(position)
-            elif color == "BLUE":
-                position = "4-" + str(position)
+            if piece.color == "RED":
+                position = "1-" + str(piece.position)
+            elif piece.color == "GOLD":
+                position = "2-" + str(piece.position)
+            elif piece.color == "GREEN":
+                position = "3-" + str(piece.position)
+            elif piece.color == "SKYBLUE":
+                position = "4-" + str(piece.position)
         else:
-            position += offset[color]
+            position += offset[piece.color]
+            if position > 51:
+                position -= 52
 
         return self.track[str(position)]
 
@@ -199,7 +225,8 @@ class Board:
     def draw_die(self, roll):
 
         die_pos = (
-        self.die_position["top_left"][0] + self.die_border / 2, self.die_position["top_left"][1] + self.die_border / 2)
+            self.die_position["top_left"][0] + self.die_border / 2,
+            self.die_position["top_left"][1] + self.die_border / 2)
         die_size = abs(self.die_position["top_left"][0] - self.die_position["top_right"][0]) - self.die_border
         pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(die_pos, (die_size, die_size)),
                          border_radius=2)
@@ -209,12 +236,12 @@ class Board:
 
             pygame.draw.circle(self.screen, pygame.Color("black"), pip_center, pip_size)
         if roll in [2, 3]:
-            corner_pos = self._get_corner_die_positions(die_pos, die_size)
+            corner_pos = self._get_corner_pip_positions(die_pos, die_size)
             for index, pos in enumerate(corner_pos):
                 if index in [0, 3]:
                     pygame.draw.circle(self.screen, pygame.Color("black"), pos, pip_size)
         if roll in [4, 5, 6]:
-            corner_pos = self._get_corner_die_positions(die_pos, die_size)
+            corner_pos = self._get_corner_pip_positions(die_pos, die_size)
             for pos in corner_pos:
                 pygame.draw.circle(self.screen, pygame.Color("black"), pos, pip_size)
         if roll == 6:
@@ -223,7 +250,7 @@ class Board:
             for pos in middle_pip_pos:
                 pygame.draw.circle(self.screen, pygame.Color("black"), pos, pip_size)
 
-    def _get_corner_die_positions(self, die_pos, die_size):
+    def _get_corner_pip_positions(self, die_pos, die_size):
         corner_pos = [(die_pos[0] + die_size / 4, die_pos[1] + die_size / 4),
                       (die_pos[0] + die_size / 4, die_pos[1] + die_size * 3 / 4),
                       (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size / 4),
@@ -241,7 +268,6 @@ class Board:
             time.sleep(0.05)
 
         return roll_val
-
 
 # if __name__ == '__main__':
 #     board = Board()

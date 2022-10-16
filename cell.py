@@ -43,9 +43,9 @@ class Cell:
             colour = pygame.Color("red")
         elif color.upper() == "GREEN":
             colour = pygame.Color("green")
-        elif color.upper() == "YELLOW":
+        elif color.upper() == "GOLD":
             colour = pygame.Color("gold")
-        elif color.upper() == "BLUE":
+        elif color.upper() == "SKYBLUE":
             colour = pygame.Color("skyblue")
         else:
             raise Exception("Wrong color")

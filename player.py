@@ -9,3 +9,5 @@ class Player:
         for i in range(0, 4):
             self.pieces.append(Piece(self.color))
 
+    def move(self, roll):
+        self.pieces[0].position += roll
