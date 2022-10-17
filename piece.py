@@ -2,6 +2,11 @@
 class Piece:
     HOME_POSITION = 57
 
+    offset = {"RED": 0,
+              "GREEN": 13,
+              "GOLD": 26,
+              "SKYBLUE": 39}
+
     def __init__(self, color):
         self.position = 0
         self.color = color
@@ -28,3 +33,6 @@ class Piece:
     def return_to_base(self):
         if not self.is_home():
             self.position = 0
+
+    def get_relative_position(self):
+        return (self.position + self.offset[self.color]) % 52
