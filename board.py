@@ -144,13 +144,11 @@ class Board:
         white_square_pos.append((circle_center[0] + circle_radius / rv - self.cell_size / 2,
                                  circle_center[1] + circle_radius / rv - self.cell_size / 2))
 
-
         # Save base_positions for each piece
         for idx, pos in enumerate(white_square_pos):
             self._draw_white_square_with_border(pos)
             base_positions = [(x[0] + self.cell_size / 2, x[1] + self.cell_size / 2) for x in white_square_pos]
             player.pieces[idx].base_position = base_positions[idx]
-
 
     def show_names(self):
         font = pygame.font.Font('freesansbold.ttf', 20)
@@ -159,7 +157,8 @@ class Board:
         top_right = ((self.cell_size + self.border_size) * 9 + name_padding, name_padding)
         bot_left = (name_padding, (self.cell_size + self.border_size) * 9 + name_padding)
         bot_right = (
-        (self.cell_size + self.border_size) * 9 + name_padding, (self.cell_size + self.border_size) * 9 + name_padding)
+            (self.cell_size + self.border_size) * 9 + name_padding,
+            (self.cell_size + self.border_size) * 9 + name_padding)
 
         for player in self.players:
             text = font.render(player.name, True, player.color)
@@ -184,7 +183,6 @@ class Board:
                 if piece.is_on_track():
                     curr_cell = self.get_cell(piece)
                     curr_cell.draw_piece(self.screen, piece.color)
-
 
     def _offset_position(self, position, offset):
         return position[0] + offset, position[1] + offset
@@ -216,7 +214,6 @@ class Board:
         pygame.draw.rect(self.screen, pygame.Color("black"), pygame.Rect(black_pos, black_size))
         pygame.draw.rect(self.screen, pygame.Color("white"), pygame.Rect(pos, (self.cell_size, self.cell_size)))
 
-
     def draw_die(self):
         roll = self.roll_val
         die_pos = (
@@ -247,10 +244,10 @@ class Board:
 
     def _get_corner_pip_positions(self, die_pos, die_size):
         corner_pip_pos = [(die_pos[0] + die_size / 4, die_pos[1] + die_size / 4),
-                      (die_pos[0] + die_size / 4, die_pos[1] + die_size * 3 / 4),
-                      (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size / 4),
-                      (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size * 3 / 4),
-                      ]
+                          (die_pos[0] + die_size / 4, die_pos[1] + die_size * 3 / 4),
+                          (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size / 4),
+                          (die_pos[0] + die_size * 3 / 4, die_pos[1] + die_size * 3 / 4),
+                          ]
 
         return corner_pip_pos
 

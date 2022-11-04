@@ -48,7 +48,6 @@ class Game:
         # If a player rolls a 6 they have another turn (maximum of 3)
         self.roll_and_move()
         self.next_player()
-        
 
     def knock_off(self):
         active_piece = self.active_player.active_piece()
@@ -58,7 +57,7 @@ class Game:
                 for piece in player.pieces:
                     if piece.get_relative_position() == active_piece.get_relative_position():
                         piece.return_to_base()
-    
+
     def run(self):
 
         while not self.winner_found:
