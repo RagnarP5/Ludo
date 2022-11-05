@@ -8,7 +8,9 @@ class Player:
         self.pieces = []
         for i in range(0, 4):
             self.pieces.append(Piece(self.color))
+
         self.active_piece_idx = 0
+        self.is_active_player = False
 
     def move(self, roll):
         self.active_piece().position += roll

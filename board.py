@@ -151,7 +151,10 @@ class Board:
             player.pieces[idx].base_position = base_positions[idx]
 
     def show_names(self):
-        font = pygame.font.Font('freesansbold.ttf', 20)
+
+        def _get_font(size=20):
+            return pygame.font.Font('freesansbold.ttf', size)
+
         name_padding = 10
         top_left = (name_padding, name_padding)
         top_right = ((self.cell_size + self.border_size) * 9 + name_padding, name_padding)
@@ -161,7 +164,9 @@ class Board:
             (self.cell_size + self.border_size) * 9 + name_padding)
 
         for player in self.players:
-            text = font.render(player.name, True, player.color)
+
+            font = _get_font()
+
             if player.color.upper() == "RED":
                 pos = top_left
             elif player.color.upper() == "GREEN":
@@ -172,6 +177,8 @@ class Board:
                 pos = bot_left
             else:
                 raise Exception("Incorrect color")
+
+            text = font.render(player.name, True, player.color)
             self.screen.blit(text, pos)
 
     def draw_pieces(self):

@@ -18,10 +18,13 @@ class Game:
         self.board = Board(self.players)
         self.active_player_id = random.randint(0, 3)
         self.active_player = self.players[self.active_player_id]
+        self.active_player.is_active_player = True
 
     def next_player(self):
+        self.active_player.is_active_player = False
         self.active_player_id = (self.active_player_id + 1) % 4
         self.active_player = self.players[self.active_player_id]
+        self.active_player.is_active_player = True
 
     def _all_pieces_in_base(self):
         return all([piece.is_in_base() for piece in self.active_player.pieces])
