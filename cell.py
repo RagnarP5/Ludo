@@ -37,8 +37,13 @@ class Cell:
         pos = self.position()
         return (pos[0] + self.cell_size / 2, pos[1] + self.cell_size / 2)
 
-    def draw_piece(self, screen, color):
-
+    def draw_piece(self, screen, color, n_pieces=1):
+        """
+        :param screen:
+        :param color:
+        :param n_pieces: Number of pieces on cell
+        :return:
+        """
         if color.upper() == "RED":
             colour = pygame.Color("red")
         elif color.upper() == "GREEN":
@@ -52,3 +57,6 @@ class Cell:
 
         pygame.draw.circle(screen, pygame.Color("black"), self.get_piece_position(), self.piece_radius + self.border_size)
         pygame.draw.circle(screen, colour, self.get_piece_position(), self.piece_radius)
+        for i in range(1, n_pieces):
+            pygame.draw.circle(screen, pygame.Color("black"), self.get_piece_position(), self.piece_radius - i*self.border_size)
+            pygame.draw.circle(screen, colour, self.get_piece_position(), self.piece_radius - 2*i*self.border_size)

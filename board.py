@@ -181,8 +181,10 @@ class Board:
                     self._draw_circle_with_border(pygame.Color(player.color), piece.base_position, piece.radius)
 
                 if piece.is_on_track():
+                    piece_positions = [x.position for x in player.pieces]
+                    n_pieces = sum([x == piece.position for x in piece_positions])
                     curr_cell = self.get_cell(piece)
-                    curr_cell.draw_piece(self.screen, piece.color)
+                    curr_cell.draw_piece(self.screen, piece.color, n_pieces)
 
     def _offset_position(self, position, offset):
         return position[0] + offset, position[1] + offset
