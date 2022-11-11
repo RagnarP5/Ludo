@@ -178,11 +178,18 @@ class Board:
             else:
                 raise Exception("Incorrect color")
 
+            if player.is_active_player:
+                font.set_underline(True)
+                font.set_bold(True)
+                font.set_italic(True)
+
             text = font.render(player.name, True, player.color)
             self.screen.blit(text, pos)
 
     def draw_pieces(self):
-        for player in self.players:
+        # Make sure that the active player displays above the others
+        sorted_players = sorted(self.players, key=lambda x: x.is_active_player)
+        for player in sorted_players:
             for piece in player.pieces:
                 if piece.is_in_base():
                     self._draw_circle_with_border(pygame.Color(player.color), piece.base_position, piece.radius)

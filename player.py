@@ -20,3 +20,8 @@ class Player:
 
     def active_piece(self):
         return self.pieces[self.active_piece_idx]
+
+    def furthest_piece(self):
+        piece_positions = [x.position for x in self.pieces]
+        self.active_piece_idx = piece_positions.index(max(piece_positions))
+        return self.active_piece()

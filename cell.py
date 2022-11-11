@@ -58,5 +58,4 @@ class Cell:
         pygame.draw.circle(screen, pygame.Color("black"), self.get_piece_position(), self.piece_radius + self.border_size)
         pygame.draw.circle(screen, colour, self.get_piece_position(), self.piece_radius)
         for i in range(1, n_pieces):
-            pygame.draw.circle(screen, pygame.Color("black"), self.get_piece_position(), self.piece_radius - i*self.border_size)
-            pygame.draw.circle(screen, colour, self.get_piece_position(), self.piece_radius - 2*i*self.border_size)
+            pygame.draw.circle(screen, pygame.Color("black"), self.get_piece_position(), self.piece_radius - 2*i*self.border_size, width=self.border_size)
